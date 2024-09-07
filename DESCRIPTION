@@ -1,0 +1,10 @@
+Package: Shaheen.Clinical.Databasee
+Type: Package
+Title: What the Package Does (Title Case)
+Version: 0.1.0
+Author: Ahmed Shaheen - MD
+Maintainer: The package maintainer <ahmeds1999haheen@gmail.com>
+Description: https://www.researchgate.net/profile/Ahmed-Shaheen-6
+License: No license
+Encoding: UTF-8
+LazyData: true
