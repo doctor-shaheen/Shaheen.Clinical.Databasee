@@ -9,6 +9,8 @@
 > ICD9.10(files, dataOuput, commonFile, ICD.10.CODES, ICD.9.CODES)
 
 
+Update: now the NIS functions support .sav and .sas files 
+
 
 
 
