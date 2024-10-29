@@ -686,10 +686,9 @@ PODIAGx <- function(files, dataOuput, commonFile,words){
 #----  importing_data_from_NIS ----
 
 # NIS.COLUMNS.CODES
-
 NIS.COLUMNS.CODES <- function(file_paths, codes_to_filter,
                               columns_to_filter, output_dir,
-                              output_name="_",chunk_size = 100000) {
+                              output_name="_", chunk_size = 100000) {
   library(haven)
   library(tidyverse)
   library(pbapply)
@@ -705,55 +704,57 @@ NIS.COLUMNS.CODES <- function(file_paths, codes_to_filter,
 
   for (file_path in file_paths) {
     total_cases <- 0  # Reset total cases for each file
-
     dat <- data.frame()
 
     repeat {
       # Capture the start time of the loop
       loop_start_time <- Sys.time()
 
-      data_chunk <- read_sas(file_path, skip = total_cases, n_max = chunk_size)
+      # Determine the file type and read accordingly
+      if (grepl("\\.sav$", file_path, ignore.case = TRUE)) {
+        data_chunk <- read_sav(file_path, skip = total_cases, n_max = chunk_size)
+      } else if (grepl("\\.sas7bdat$", file_path, ignore.case = TRUE)) {
+        data_chunk <- read_sas(file_path, skip = total_cases, n_max = chunk_size)
+      } else {
+        stop("Unsupported file format. Only .sav and .sas7bdat files are allowed.")
+      }
+
       if (nrow(data_chunk) == 0) {
         break
       }
 
       data_chunk <- data_chunk %>% mutate_if(is.character, ~as.factor(as.character(.)))
-
       df <- data_chunk %>%
         filter_at(vars(all_of(columns_to_filter)), any_vars(. %in% codes_to_filter))
 
       dat <- rbind(dat, df)
-
       total_cases <- total_cases + nrow(data_chunk)
 
-      # Capture the end time of the loop and calculate the duration
+      # Log progress
       loop_end_time <- Sys.time()
-      cat("File: ", basename(file_path) , "\n")
-      cat("Number of total cases: ", total_cases , "\n")
-      cat("Number of filtered cases: ", nrow(dat) , "\n")
+      cat("File: ", basename(file_path), "\n")
+      cat("Total cases: ", total_cases, "\n")
+      cat("Filtered cases: ", nrow(dat), "\n")
       loop_time = difftime(loop_end_time, loop_start_time, units = "secs")
-      cat("Time for this loop: ",loop_time,"secs","\n")
+      cat("Loop time: ", loop_time, "secs\n")
       tttime = tttime + loop_time
-      cat("Total time: ",tttime/60,"min","\n")
+      cat("Total time: ", tttime / 60, "min\n")
     }
 
-    # Save the filtered data to a separate file
-    output_file <- file.path(output_dir, paste0(basename(file_path),output_name, "_filtered.csv"))
+    output_file <- file.path(output_dir, paste0(basename(file_path), output_name, "_filtered.csv"))
     write.csv(dat, output_file, row.names = FALSE)
   }
 
-  # Calculate the total time
   end_time <- Sys.time()
   total_time <- difftime(end_time, start_time, units = "secs")
-  cat("Total time: ", total_time/60,"minutes", "\n")
-
+  cat("Total time: ", total_time / 60, "minutes\n")
 }
 
 
-
+# NIS.COLUMNS.PATTERN
 NIS.COLUMNS.PATTERN <- function(file_paths, words,
                                 columns_to_filter, output_dir,
-                                output_name="_",chunk_size = 100000) {
+                                output_name="_", chunk_size = 100000) {
   library(haven)
   library(tidyverse)
   library(pbapply)
@@ -770,49 +771,52 @@ NIS.COLUMNS.PATTERN <- function(file_paths, words,
 
   for (file_path in file_paths) {
     total_cases <- 0  # Reset total cases for each file
-
     dat <- data.frame()
 
     repeat {
       # Capture the start time of the loop
       loop_start_time <- Sys.time()
 
-      data_chunk <- read_sas(file_path, skip = total_cases, n_max = chunk_size)
+      # Determine the file type and read accordingly
+      if (grepl("\\.sav$", file_path, ignore.case = TRUE)) {
+        data_chunk <- read_sav(file_path, skip = total_cases, n_max = chunk_size)
+      } else if (grepl("\\.sas7bdat$", file_path, ignore.case = TRUE)) {
+        data_chunk <- read_sas(file_path, skip = total_cases, n_max = chunk_size)
+      } else {
+        stop("Unsupported file format. Only .sav and .sas7bdat files are allowed.")
+      }
+
       if (nrow(data_chunk) == 0) {
         break
       }
 
       data_chunk <- data_chunk %>% mutate_if(is.character, ~as.factor(as.character(.)))
-
       df <- data_chunk %>%
         filter_at(vars(all_of(columns_to_filter)), any_vars(str_detect(., pattern)))
 
       dat <- rbind(dat, df)
-
       total_cases <- total_cases + nrow(data_chunk)
 
-      # Capture the end time of the loop and calculate the duration
+      # Log progress
       loop_end_time <- Sys.time()
-      cat("File: ", basename(file_path) , "\n")
-      cat("Number of total cases: ", total_cases , "\n")
-      cat("Number of filtered cases: ", nrow(dat) , "\n")
+      cat("File: ", basename(file_path), "\n")
+      cat("Total cases: ", total_cases, "\n")
+      cat("Filtered cases: ", nrow(dat), "\n")
       loop_time = difftime(loop_end_time, loop_start_time, units = "secs")
-      cat("Time for this loop: ",loop_time,"secs","\n")
+      cat("Loop time: ", loop_time, "secs\n")
       tttime = tttime + loop_time
-      cat("Total time: ",tttime/60,"min","\n")
+      cat("Total time: ", tttime / 60, "min\n")
     }
 
-    # Save the filtered data to a separate file
-    output_file <- file.path(output_dir, paste0(basename(file_path),output_name, "_filtered.csv"))
+    output_file <- file.path(output_dir, paste0(basename(file_path), output_name, "_filtered.csv"))
     write.csv(dat, output_file, row.names = FALSE)
   }
 
-  # Calculate the total time
   end_time <- Sys.time()
   total_time <- difftime(end_time, start_time, units = "secs")
-  cat("Total time: ", total_time/60,"minutes", "\n")
-
+  cat("Total time: ", total_time / 60, "minutes\n")
 }
+
 
 
 
